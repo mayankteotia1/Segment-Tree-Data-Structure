@@ -12,20 +12,20 @@ An efficient and reusable **Segment Tree** implementation in C++ that supports m
 
 This implementation is 1-based indexed and built using a clean, modular class-based design.
 
-## 📂 Files
+## Files
 
 - `SegmentTree.cpp` – Core Segment Tree class with all supported operations.
 - `main.cpp` – Sample usage / test driver.
 - `README.md` – Project overview.
 
-## 🛠 Features
+## Features
 
 - No lazy propagation (non-lazy segment tree).
 - Modular `Node` struct for storing multiple properties.
 - Handles queries in `O(log N)` and updates in `O(log N)`.
 - Supports combining multiple queries in a single pass.
 
-## 🚀 Supported Operations
+##  Supported Operations
 
 | Operation | Function       |
 |----------:|----------------|
@@ -37,7 +37,7 @@ This implementation is 1-based indexed and built using a clean, modular class-ba
 | OR        | `queryOR(l, r)` |
 | XOR       | `queryXOR(l, r)` |
 
-## 🔧 How to Compile
+##  How to Compile
 
 Using `g++`:
 

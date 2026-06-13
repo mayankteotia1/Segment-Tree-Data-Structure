@@ -42,5 +42,5 @@ This implementation is 1-based indexed and built using a clean, modular class-ba
 Using `g++`:
 
 ```bash
-g++ -std=c++17 main.cpp -o segment_tree
+g++ -std=c++17 mainseg.cpp -o segment_tree
 ./segment_tree

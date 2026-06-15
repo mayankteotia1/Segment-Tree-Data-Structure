@@ -1,95 +1,170 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Node {
+int __gcd(int a, int b)
+{
+    if (b == 0)
+    {
+        return a;
+    }
+
+    return __gcd(b, a % b);
+}
+
+struct Node
+{
+    // Aggregate values stored for a segment
     int sum = 0;
+
     int minVal = INT_MAX;
     int maxVal = INT_MIN;
+
     int gcd = 0;
     int count = 0;
+
     int bit_and = ~0;
     int bit_or = 0;
     int bit_xor = 0;
 
     Node() = default;
 
-    Node(int value) {
+    // Leaf node constructor
+    Node(int value)
+    {
         sum = value;
+
         minVal = value;
         maxVal = value;
+
         gcd = value;
         count = 1;
+
         bit_and = value;
         bit_or = value;
         bit_xor = value;
     }
 
-    static Node merge(const Node &a, const Node &b) {
-        Node res(0);
-        res.sum = a.sum + b.sum;
-        res.minVal = min(a.minVal, b.minVal);
-        res.maxVal = max(a.maxVal, b.maxVal);
-        res.gcd = __gcd(a.gcd, b.gcd);
-        res.count = a.count + b.count;
-        res.bit_and = a.bit_and & b.bit_and;
-        res.bit_or = a.bit_or | b.bit_or;
-        res.bit_xor = a.bit_xor ^ b.bit_xor;
-        return res;
+    // Merge two child nodes
+    static Node merge(const Node &leftNode, const Node &rightNode)
+    {
+        Node result;
+
+        result.sum = leftNode.sum + rightNode.sum;
+
+        result.minVal = min(leftNode.minVal, rightNode.minVal);
+        result.maxVal = max(leftNode.maxVal, rightNode.maxVal);
+
+        result.gcd = __gcd(leftNode.gcd, rightNode.gcd);
+        result.count = leftNode.count + rightNode.count;
+
+        result.bit_and = leftNode.bit_and & rightNode.bit_and;
+        result.bit_or = leftNode.bit_or | rightNode.bit_or;
+        result.bit_xor = leftNode.bit_xor ^ rightNode.bit_xor;
+
+        return result;
     }
 };
 
-class SegmentTree {
+class SegmentTree
+{
 private:
     int n;
     vector<Node> tree;
 
-    void build(const vector<int> &arr, int v, int tl, int tr) {
-        if (tl == tr) {
-            tree[v] = Node(arr[tl]);
-        } else {
-            int tm = (tl + tr) / 2;
-            build(arr, 2*v, tl, tm);
-            build(arr, 2*v+1, tm+1, tr);
-            tree[v] = Node::merge(tree[2*v], tree[2*v+1]);
+    // Build the segment tree
+    void build(const vector<int> &arr, int node, int start, int end)
+    {
+        if (start == end)
+        {
+            tree[node] = Node(arr[start]);
+            return;
         }
+
+        int mid = (start + end) / 2;
+
+        build(arr, 2 * node, start, mid);
+        build(arr, 2 * node + 1, mid + 1, end);
+
+        tree[node] = Node::merge(tree[2 * node],
+                                 tree[2 * node + 1]);
     }
 
-    void update(int v, int tl, int tr, int pos, int new_val) {
-        if (tl == tr) {
-            tree[v] = Node(new_val);
-        } else {
-            int tm = (tl + tr) / 2;
-            if (pos <= tm)
-                update(2*v, tl, tm, pos, new_val);
-            else
-                update(2*v+1, tm+1, tr, pos, new_val);
-            tree[v] = Node::merge(tree[2*v], tree[2*v+1]);
+    // Point update
+    void update(int node, int start, int end, int position, int newValue)
+    {
+        if (start == end)
+        {
+            tree[node] = Node(newValue);
+            return;
         }
+
+        int mid = (start + end) / 2;
+
+        if (position <= mid)
+        {
+            update(2 * node, start, mid, position, newValue);
+        }
+        else
+        {
+            update(2 * node + 1, mid + 1, end, position, newValue);
+        }
+
+        tree[node] = Node::merge(tree[2 * node],
+                                 tree[2 * node + 1]);
     }
 
-    Node query(int v, int tl, int tr, int l, int r) {
-        if (l > r)
+    // Range query
+    Node query(int node, int start, int end, int left, int right)
+    {
+        if (left > right)
+        {
             return Node();
-        if (l == tl && r == tr)
-            return tree[v];
-        int tm = (tl + tr) / 2;
-        Node left = query(2*v, tl, tm, l, min(r, tm));
-        Node right = query(2*v+1, tm+1, tr, max(l, tm+1), r);
-        return Node::merge(left, right);
+        }
+
+        if (start == left && end == right)
+        {
+            return tree[node];
+        }
+
+        int mid = (start + end) / 2;
+
+        Node leftPart =
+            query(2 * node,
+                  start,
+                  mid,
+                  left,
+                  min(right, mid));
+
+        Node rightPart =
+            query(2 * node + 1,
+                  mid + 1,
+                  end,
+                  max(left, mid + 1),
+                  right);
+
+        return Node::merge(leftPart, rightPart);
     }
 
 public:
-    SegmentTree(const vector<int> &arr) {
-        n = arr.size() - 1;
+    SegmentTree(const vector<int> &arr)
+    {
+        // Assumes 1-indexed array
+        n = (int)arr.size() - 1;
+
         tree.resize(4 * (n + 1));
+
         build(arr, 1, 1, n);
     }
 
-    void update(int pos, int new_val) {
-        update(1, 1, n, pos, new_val);
+    // Public point update
+    void update(int position, int newValue)
+    {
+        update(1, 1, n, position, newValue);
     }
 
-    Node query(int l, int r) {
-        return query(1, 1, n, l, r);
+    // Public range query
+    Node query(int left, int right)
+    {
+        return query(1, 1, n, left, right);
     }
-};
+};s
